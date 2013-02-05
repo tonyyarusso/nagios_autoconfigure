@@ -4,7 +4,7 @@
 #
 # Copyright: 2013, TIES
 # Author: Tony Yarusso <Yarusso@ties.k12.mn.us>
-# License: BSD <http://www.opensource.org/licenses/bsd-license.php>
+# License: BSD <http://opensource.org/licenses/BSD-3-Clause>
 # Homepage: http://ties.k12.mn.us/
 # Description: Automatically sets alerting thresholds in Nagios based on past check results
 #	This works by analyzing the performance data component of past check results (stored by NDOUtils) to establish
@@ -28,12 +28,12 @@
 # following conditions are met:
 #
 # * Redistributions of source code must retain the above copyright notice, this list of conditions and the following
-# disclaimer.
-# * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
-# following disclaimer in the documentation and/or other materials provided with the distribution.
-# * Neither the name of Tony Yarusso nor the names of its contributors may be used to endorse or promote products derived
-# from this software without specific prior written permission.
-
+#   disclaimer.
+# * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
+#   disclaimer in the documentation and/or other materials provided with the distribution.
+# * Neither the name of TIES nor the names of its contributors may be used to endorse or promote products derived from
+#   this software without specific prior written permission.
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
 # INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 # DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
@@ -82,7 +82,15 @@ conn = mdb.connect(dbserver, dbuser, dbpwd, dbname);
 
 with conn:
 	cur = conn.cursor()
-	cur.execute("SELECT perfdata FROM nagios_servicechecks LEFT JOIN nagios_services USING (service_object_id) LEFT JOIN nagios_hosts USING (host_object_id) WHERE nagios_services.display_name LIKE '% Bandwidth' AND state != 3 AND perfdata IS NOT NULL AND start_time > '"lookback.strftime('%Y-%m-%d')"' AND start_time LIKE '% "now.strftime('%H:%M')[:-1]"%' ORDER BY start_time;")
+	cur.execute("SELECT perfdata FROM nagios_servicechecks \
+	             LEFT JOIN nagios_services USING (service_object_id) \
+	             LEFT JOIN nagios_hosts USING (host_object_id) \
+	             WHERE nagios_services.display_name LIKE '% Bandwidth' \
+	             AND state != 3 \
+	             AND perfdata IS NOT NULL \
+	             AND start_time > '"lookback.strftime('%Y-%m-%d')"' \
+	             AND start_time LIKE '% "now.strftime('%H:%M')[:-1]"%' \
+	             ORDER BY start_time;")
 	rows = cur.fetchall()
 	
 	for row in rows:

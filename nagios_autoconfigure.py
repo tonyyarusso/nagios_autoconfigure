@@ -56,15 +56,15 @@ import re
 import datetime as dt
 
 def convert_bits(count, prefix):
-	if prefix = 'K' or prefix = 'k':
+	if prefix == 'K' or prefix == 'k':
 		bits = count * 1024
-	elif prefix = 'M' or prefix = 'm':
+	elif prefix == 'M' or prefix == 'm':
 		bits = count * 1048576
-	elif prefix = 'G' or prefix = 'g':
+	elif prefix == 'G' or prefix == 'g':
 		bits = count * 1073741824
-	elif prefix = 'T' or prefix = 't':
+	elif prefix == 'T' or prefix == 't':
 		bits = count * 1099511627776
-	elif prefix = 'P' or prefix = 'p':
+	elif prefix == 'P' or prefix == 'p':
 		bits = count * 1125899906842624
 	elif prefix is None:
 		bits = count
@@ -88,14 +88,13 @@ with conn:
 	             WHERE nagios_services.display_name LIKE '% Bandwidth' \
 	             AND state != 3 \
 	             AND perfdata IS NOT NULL \
-	             AND start_time > '"lookback.strftime('%Y-%m-%d')"' \
-	             AND start_time LIKE '% "now.strftime('%H:%M')[:-1]"%' \
+	             AND start_time > '" + lookback.strftime('%Y-%m-%d') + "' \
+	             AND start_time LIKE '% " + now.strftime('%H:%M')[:-1] + "%' \
 	             ORDER BY start_time;")
 	rows = cur.fetchall()
 	
 	for row in rows:
-		print row
-		parsed_row = perfpattern.search(row).groups()
+		parsed_row = perfpattern.search(row[0]).groups()
 		inbits = convert_bits(float(parsed_row[0]), parsed_row[1])
 		inwarn = int(parsed_row[2])
 		incrit = int(parsed_row[3])
@@ -106,9 +105,9 @@ with conn:
 		checks_array.append(check_result)
 		
 
-perfdata = 'in=575.159823Mb/s;800;950 out=22.757955Mb/s;15;25'
+# perfdata = 'in=575.159823Mb/s;800;950 out=22.757955Mb/s;15;25'
 
-print perfpattern.search(perfdata).groups()
+# print perfpattern.search(perfdata).groups()
 # ('575.159823', 'M', '800', '950', '22.757955', 'M', '15', '25')
 
 

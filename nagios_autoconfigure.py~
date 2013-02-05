@@ -11,7 +11,7 @@
 #	the mean (average) values and standard deviations from those values over a defined interval, and reconfiguring
 #	Nagios to set the warning and critical alerting thresholds as number of standard deviations away from the mean.
 #
-# Revision history is kept in Git at https://github.com/tonyyarusso/nagios_autoconfigure
+# Revision history is kept in Git at https://code.launchpad.net/~tonyyarusso/+junk/check_cap
 #
 # Usage: ./nagios_autoconfigure.py --TBD
 # e.g. 

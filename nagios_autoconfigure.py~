@@ -54,6 +54,7 @@ import MySQLdb as mdb
 import sys
 import re
 import datetime as dt
+from numpy import array
 
 def convert_bits(count, prefix):
 	if prefix == 'K' or prefix == 'k':
@@ -75,7 +76,7 @@ def convert_bits(count, prefix):
 
 now = dt.datetime.now()
 lookback = now - dt.timedelta(weeks=4)
-checks_array = []
+checks_list = []
 # Match things in this format: 'in=575.159823Mb/s;800;950 out=22.757955Mb/s;15;25'
 perfpattern = re.compile(r'^in=(\d*\.?\d+)(K|M|G)?b/s;(\d*);(\d*) out=(\d*\.?\d+)(K|k|M|m|G|g|T|t|P|p)?b/s;(\d*);(\d*)$')
 
@@ -87,6 +88,8 @@ with conn:
 	             LEFT JOIN nagios_services USING (service_object_id) \
 	             LEFT JOIN nagios_hosts USING (host_object_id) \
 	             WHERE nagios_services.display_name LIKE '% Bandwidth' \
+	             AND nagios_hosts.display_name = 'Osseo' \
+	             AND nagios_services.display_name = 'LOGIS Bandwidth' \
 	             AND state != 3 \
 	             AND perfdata IS NOT NULL \
 	             AND start_time > '" + lookback.strftime('%Y-%m-%d') + "' \
@@ -104,7 +107,13 @@ with conn:
 		outwarn = int(parsed_row[6])
 		outcrit = int(parsed_row[7])
 		check_result = ( inbits, inwarn, incrit, outbits, outwarn, outcrit )
-		checks_array.append(check_result)
-	
-	print checks_array
+		checks_list.append(check_result)
+		
+	checks_array = array(checks_list)
+	raw_means = list(checks_array.mean(axis=0))
+	means = [ raw_means[0], int(raw_means[1]), int(raw_means[2]), raw_means[3], int(raw_means[4]), int(raw_means[5]) ]
+	raw_stdvs = list(checks_array.std(axis=0))
+	stdvs = [ raw_stdvs[0], int(raw_stdvs[1]), int(raw_stdvs[2]), raw_stdvs[3], int(raw_stdvs[4]), int(raw_stdvs[5]) ]
+	print means
+	print stdvs
 

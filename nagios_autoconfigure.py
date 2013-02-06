@@ -76,6 +76,7 @@ def convert_bits(count, prefix):
 now = dt.datetime.now()
 lookback = now - dt.timedelta(weeks=4)
 checks_array = []
+# Match things in this format: 'in=575.159823Mb/s;800;950 out=22.757955Mb/s;15;25'
 perfpattern = re.compile(r'^in=(\d*\.?\d+)(K|M|G)?b/s;(\d*);(\d*) out=(\d*\.?\d+)(K|k|M|m|G|g|T|t|P|p)?b/s;(\d*);(\d*)$')
 
 conn = mdb.connect(dbserver, dbuser, dbpwd, dbname);
@@ -94,6 +95,7 @@ with conn:
 	rows = cur.fetchall()
 	
 	for row in rows:
+		# Store perfdata in a tuple like this: ('575.159823', 'M', '800', '950', '22.757955', 'M', '15', '25')
 		parsed_row = perfpattern.search(row[0]).groups()
 		inbits = convert_bits(float(parsed_row[0]), parsed_row[1])
 		inwarn = int(parsed_row[2])
@@ -103,11 +105,4 @@ with conn:
 		outcrit = int(parsed_row[7])
 		check_result = ( inbits, inwarn, incrit, outbits, outwarn, outcrit )
 		checks_array.append(check_result)
-		
-
-# perfdata = 'in=575.159823Mb/s;800;950 out=22.757955Mb/s;15;25'
-
-# print perfpattern.search(perfdata).groups()
-# ('575.159823', 'M', '800', '950', '22.757955', 'M', '15', '25')
-
 

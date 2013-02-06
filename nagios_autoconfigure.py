@@ -71,7 +71,7 @@ def convert_bits(count, prefix):
 	else:
 		print "Unsupported prefix"
 		sys.exit(1)
-	return bits
+	return int(bits)
 
 now = dt.datetime.now()
 lookback = now - dt.timedelta(weeks=4)

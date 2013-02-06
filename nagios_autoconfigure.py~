@@ -76,7 +76,7 @@ def convert_bits(count, prefix):
 
 now = dt.datetime.now()
 lookback = now - dt.timedelta(weeks=4)
-window = dt.timedelta(minutes=5)
+window = dt.timedelta(hours=6)
 checks_list = []
 # Match things in this format: 'in=575.159823Mb/s;800;950 out=22.757955Mb/s;15;25'
 perfpattern = re.compile(r'^in=(\d*\.?\d+)(K|M|G)?b/s;(\d*);(\d*) out=(\d*\.?\d+)(K|k|M|m|G|g|T|t|P|p)?b/s;(\d*);(\d*)$')
@@ -94,7 +94,7 @@ with conn:
 	             AND state != 3 \
 	             AND perfdata IS NOT NULL \
 	             AND start_time > '" + lookback.strftime('%Y-%m-%d') + "' \
-	             AND DATE_FORMAT(start_time, '%H:%i') > '" + (now - window).strftime('%H:%M') + "' \
+	             AND DATE_FORMAT(start_time, '%H:%i') > '" + now.strftime('%H:%M') + "' \
 	             AND DATE_FORMAT(start_time, '%H:%i') < '" + (now + window).strftime('%H:%M') + "' \
 	             AND DATE_FORMAT(start_time, '%w') = '" + now.strftime('%w') + "' \
 	             ORDER BY start_time;"
@@ -113,12 +113,12 @@ with conn:
 		check_result = ( inbits, inwarn, incrit, outbits, outwarn, outcrit )
 		checks_list.append(check_result)
 	
-	print "Based on " + str(len(checks_list)) + " data points"
+	print "Based on " + str(len(checks_list)) + " data points:"
 	checks_array = array(checks_list)
 	raw_means = list(checks_array.mean(axis=0))
-	means = [ raw_means[0], int(raw_means[1]), int(raw_means[2]), raw_means[3], int(raw_means[4]), int(raw_means[5]) ]
+	means = [ int(raw_means[0]), int(raw_means[1]), int(raw_means[2]), int(raw_means[3]), int(raw_means[4]), int(raw_means[5]) ]
 	raw_stdvs = list(checks_array.std(axis=0))
-	stdvs = [ raw_stdvs[0], int(raw_stdvs[1]), int(raw_stdvs[2]), raw_stdvs[3], int(raw_stdvs[4]), int(raw_stdvs[5]) ]
+	stdvs = [ int(raw_stdvs[0]), int(raw_stdvs[1]), int(raw_stdvs[2]), int(raw_stdvs[3]), int(raw_stdvs[4]), int(raw_stdvs[5]) ]
 	print means
 	print stdvs
 

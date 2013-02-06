@@ -94,6 +94,7 @@ with conn:
 	             AND perfdata IS NOT NULL \
 	             AND start_time > '" + lookback.strftime('%Y-%m-%d') + "' \
 	             AND DATE_FORMAT(start_time, '%H:%i') LIKE '" + now.strftime('%H:%M')[:-1] + "%' \
+	             AND DATE_FORMAT(start_time, '%w') = '" + now.strftime('%w') + "' \
 	             ORDER BY start_time;")
 	rows = cur.fetchall()
 	

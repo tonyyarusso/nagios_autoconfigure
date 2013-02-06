@@ -76,7 +76,7 @@ def convert_bits(count, prefix):
 now = dt.datetime.now()
 lookback = now - dt.timedelta(weeks=4)
 checks_array = []
-perfpattern = re.compile(r'^in=(\d*.?\d*)(K|M|G)?b/s;(\d*);(\d*) out=(\d*.?\d*)(K|k|M|m|G|g|T|t|P|p)?b/s;(\d*);(\d*)$')
+perfpattern = re.compile(r'^in=(\d*\.?\d+)(K|M|G)?b/s;(\d*);(\d*) out=(\d*\.?\d+)(K|k|M|m|G|g|T|t|P|p)?b/s;(\d*);(\d*)$')
 
 conn = mdb.connect(dbserver, dbuser, dbpwd, dbname);
 

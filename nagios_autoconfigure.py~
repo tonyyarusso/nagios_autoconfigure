@@ -76,6 +76,7 @@ def convert_bits(count, prefix):
 
 now = dt.datetime.now()
 lookback = now - dt.timedelta(weeks=4)
+window = dt.timedelta(minutes=5)
 checks_list = []
 # Match things in this format: 'in=575.159823Mb/s;800;950 out=22.757955Mb/s;15;25'
 perfpattern = re.compile(r'^in=(\d*\.?\d+)(K|M|G)?b/s;(\d*);(\d*) out=(\d*\.?\d+)(K|k|M|m|G|g|T|t|P|p)?b/s;(\d*);(\d*)$')
@@ -84,7 +85,7 @@ conn = mdb.connect(dbserver, dbuser, dbpwd, dbname);
 
 with conn:
 	cur = conn.cursor()
-	cur.execute("SELECT perfdata FROM nagios_servicechecks \
+	query = "SELECT perfdata FROM nagios_servicechecks \
 	             LEFT JOIN nagios_services USING (service_object_id) \
 	             LEFT JOIN nagios_hosts USING (host_object_id) \
 	             WHERE nagios_services.display_name LIKE '% Bandwidth' \
@@ -93,9 +94,11 @@ with conn:
 	             AND state != 3 \
 	             AND perfdata IS NOT NULL \
 	             AND start_time > '" + lookback.strftime('%Y-%m-%d') + "' \
-	             AND DATE_FORMAT(start_time, '%H:%i') LIKE '" + now.strftime('%H:%M')[:-1] + "%' \
+	             AND DATE_FORMAT(start_time, '%H:%i') > '" + (now - window).strftime('%H:%M') + "' \
+	             AND DATE_FORMAT(start_time, '%H:%i') < '" + (now + window).strftime('%H:%M') + "' \
 	             AND DATE_FORMAT(start_time, '%w') = '" + now.strftime('%w') + "' \
-	             ORDER BY start_time;")
+	             ORDER BY start_time;"
+	cur.execute(query)
 	rows = cur.fetchall()
 	
 	for row in rows:
@@ -109,7 +112,8 @@ with conn:
 		outcrit = int(parsed_row[7])
 		check_result = ( inbits, inwarn, incrit, outbits, outwarn, outcrit )
 		checks_list.append(check_result)
-		
+	
+	print "Based on " + str(len(checks_list)) + " data points"
 	checks_array = array(checks_list)
 	raw_means = list(checks_array.mean(axis=0))
 	means = [ raw_means[0], int(raw_means[1]), int(raw_means[2]), raw_means[3], int(raw_means[4]), int(raw_means[5]) ]

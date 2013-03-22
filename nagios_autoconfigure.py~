@@ -76,10 +76,10 @@ def convert_bits(count, prefix):
 
 now = dt.datetime.now()
 lookback = now - dt.timedelta(weeks=4)
-window = dt.timedelta(hours=6)
+window = dt.timedelta(hours=1)
 checks_list = []
 # Match things in this format: 'in=575.159823Mb/s;800;950 out=22.757955Mb/s;15;25'
-perfpattern = re.compile(r'^in=(\d*\.?\d+)(K|M|G)?b/s;(\d*);(\d*) out=(\d*\.?\d+)(K|k|M|m|G|g|T|t|P|p)?b/s;(\d*);(\d*)$')
+perfpattern = re.compile(r'^in=(\d*\.?\d+)(K|k|M|m|G|g|T|t|P|p|E|e)?b/s;(\d*);(\d*) out=(\d*\.?\d+)(K|k|M|m|G|g|T|t|P|p|E|e)?b/s;(\d*);(\d*)$')
 
 conn = mdb.connect(dbserver, dbuser, dbpwd, dbname);
 
@@ -89,12 +89,12 @@ with conn:
 	             LEFT JOIN nagios_services USING (service_object_id) \
 	             LEFT JOIN nagios_hosts USING (host_object_id) \
 	             WHERE nagios_services.display_name LIKE '% Bandwidth' \
-	             AND nagios_hosts.display_name = 'Osseo' \
-	             AND nagios_services.display_name = 'LOGIS Bandwidth' \
+	             AND nagios_hosts.display_name = 'College Hub 511' \
+	             AND nagios_services.display_name = 'HE-Gustavus Bandwidth' \
 	             AND state != 3 \
 	             AND perfdata IS NOT NULL \
 	             AND start_time > '" + lookback.strftime('%Y-%m-%d') + "' \
-	             AND DATE_FORMAT(start_time, '%H:%i') > '" + now.strftime('%H:%M') + "' \
+	             AND DATE_FORMAT(start_time, '%H:%i') > '" + (now).strftime('%H:%M') + "' \
 	             AND DATE_FORMAT(start_time, '%H:%i') < '" + (now + window).strftime('%H:%M') + "' \
 	             AND DATE_FORMAT(start_time, '%w') = '" + now.strftime('%w') + "' \
 	             ORDER BY start_time;"
@@ -119,6 +119,19 @@ with conn:
 	means = [ int(raw_means[0]), int(raw_means[1]), int(raw_means[2]), int(raw_means[3]), int(raw_means[4]), int(raw_means[5]) ]
 	raw_stdvs = list(checks_array.std(axis=0))
 	stdvs = [ int(raw_stdvs[0]), int(raw_stdvs[1]), int(raw_stdvs[2]), int(raw_stdvs[3]), int(raw_stdvs[4]), int(raw_stdvs[5]) ]
+	print "Means are:"
 	print means
+	print "Standard deviations are:"
 	print stdvs
 
+	import bitconvert
+	convertedmeans = []
+	for value in means:
+		convertedmeans.append(bitconvert.main(["-p", str(value)]))
+	print "Converted means are:"
+	print convertedmeans
+	convertedstdvs = []
+	for value in stdvs:
+		convertedstdvs.append(bitconvert.main(["-p", str(value)]))
+	print "Converted standard deviations are:"
+	print convertedstdvs
